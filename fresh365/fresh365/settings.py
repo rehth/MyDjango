@@ -37,6 +37,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'tinymce',    # 富文本
     'apps.cart',   # 购物车模块
     'apps.goods',   # 商品模块
     'apps.orders',   # 订单模块
@@ -89,6 +90,8 @@ DATABASES = {
     }
 }
 
+# 使用Django的认证系统的模型类
+AUTH_USER_MODEL = 'user.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -112,3 +115,10 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
+
+# 富文本编辑器配置
+TINYMCE_DEFAULT_CONFIG = {
+    'theme': 'advanced',
+    'width': 600,
+    'height': 400,
+}

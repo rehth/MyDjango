@@ -17,7 +17,10 @@ from django.conf.urls import include, url
 from django.contrib import admin
 
 urlpatterns = [
+    # 站点
     url(r'^admin/', include(admin.site.urls)),
+    # 富文本
+    url(r'^tinymce/', include('tinymce.urls')),
     # 用户模块
     url(r'^user/', include('apps.user.urls', namespace='user')),
     # 购物车模块
