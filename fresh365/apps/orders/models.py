@@ -5,19 +5,19 @@ from db.base_model import BaseModel
 
 class OrderInfo(BaseModel):
     ''' 订单信息模型类 '''
-    pay_method_choices = [
+    pay_method_choices = (
         (1, '货到付款'),
         (2, '微信支付'),
         (3, '支付宝'),
         (4, '银联支付'),
-    ]
-    order_status_choices = [
+    )
+    order_status_choices = (
         (1, '未支付'),
         (2, '待发货'),
         (3, '待收货'),
         (4, '待评价'),
         (5, '已完成'),
-    ]
+    )
     order_id = models.CharField(max_length=128, primary_key=True, verbose_name='订单id')
     user = models.ForeignKey('user.User', verbose_name='用户')
     addr = models.ForeignKey('user.Address', verbose_name='地址')

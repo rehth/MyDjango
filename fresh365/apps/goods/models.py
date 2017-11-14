@@ -30,10 +30,10 @@ class GoodsSPU(BaseModel):
 
 class GoodsSKU(BaseModel):
     ''' 商品SKU模型类 '''
-    status_choices = [
+    status_choices = (
         (1, '上架'),
         (2, '下架')
-    ]
+    )
     name = models.CharField(max_length=20, verbose_name='商品名称')
     desc = models.CharField(max_length=256, verbose_name='商品简介')
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='价格')
@@ -80,14 +80,13 @@ class IndexTypeGoodsBanner(BaseModel):
         (0, "标题"),
         (1, "图片"),
     )
-
     goods = models.ForeignKey('GoodsType', verbose_name='商品类型')
     sku = models.ForeignKey('GoodsSKU', verbose_name='商品SKU')
     display_type = models.SmallIntegerField(default=1, choices=DISPLAY_TYPE_CHOICES, verbose_name='展示类型')
     index = models.SmallIntegerField(default=0, verbose_name='展示顺序')
 
     class Meta:
-        db_table = 'df_index_type_goods'
+        db_table = 'index_type_goods'
         verbose_name = "主页分类展示商品"
         verbose_name_plural = verbose_name
 
