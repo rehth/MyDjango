@@ -18,4 +18,12 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    # 用户模块
+    url(r'^user/', include('apps.user.urls', namespace='user')),
+    # 购物车模块
+    url(r'^cart/', include('apps.cart.urls', namespace='cart')),
+    # 订单模块
+    url(r'^orders/', include('apps.orders.urls', namespace='orders')),
+    # 商品模块
+    url(r'^', include('apps.goods.urls', namespace='goods')),
 ]

@@ -37,6 +37,10 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'apps.cart',   # 购物车模块
+    'apps.goods',   # 商品模块
+    'apps.orders',   # 订单模块
+    'apps.user',   # 用户模块
 )
 
 MIDDLEWARE_CLASSES = (
@@ -55,7 +59,7 @@ ROOT_URLCONF = 'fresh365.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,18 +80,22 @@ WSGI_APPLICATION = 'fresh365.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'fresh365',  # 数据库名称
+        'HOST': 'localhost',  # 数据库主机
+        'PORT': '3306',  # 数据库端口
+        'USER': 'root',  # 数据库用户名
+        'PASSWORD': 'mysql',  # 数据库密码
     }
 }
 
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
+# 语言
+LANGUAGE_CODE = 'zh-Hans'   # 'en-us'
+# 时区
+TIME_ZONE = 'Asia/Shanghai'    # 'UTC'
 
 USE_I18N = True
 
@@ -100,3 +108,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+# 配置静态文件加载路径
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
