@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 from django.views.generic import View
 from apps.user.models import User
-from django.core.mail import send_mail
+from celery_tasks.tasks import send_email_2_user
 from django.conf import settings
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import SignatureExpired   # 解析异常
@@ -52,7 +52,9 @@ class Register(View):
         serializer = Serializer(settings.SECRET_KEY, 3600)
         info = {'confirm': user.id}
         token = serializer.dumps(info).decode()  # bytes
-        
+        # 调用celery发送邮件
+        send_email_2_user.delay(username, token, email)
+
         # 响应请求
         return redirect(reverse('goods:index'))
 
