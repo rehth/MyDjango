@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect
+from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 from django.views.generic import View
 from apps.user.models import User
 from django.core.mail import send_mail
 from django.conf import settings
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from itsdangerous import SignatureExpired   # 解析异常
 import re
 # Create your views here.
 
@@ -51,7 +53,7 @@ class Register(View):
         info = {'confirm': user.id}
         token = serializer.dumps(info).decode()  # bytes
         html_msg = '<h5>欢迎您＠%s</h5>请点击下面的链接来激活您的账号<br>' \
-                   '<a href="http://127.0.0.1:8000/user/active/%s">/user/active/%s</a>' % (username, token, token)
+                   '<a href="http://127.0.0.1:8000/user/active/%s">http://127.0.0.1:8000/user/active/%s</a>' % (username, token, token)
         send_mail('注册激活', '', settings.EMAIL_FROM, [email], html_message=html_msg)
         # 响应请求
         return redirect(reverse('goods:index'))
@@ -59,5 +61,20 @@ class Register(View):
 
 class Active(View):
     """激活视图"""
+    def get(self, request, val):
+        serializer = Serializer(settings.SECRET_KEY, 3600)
+        try:
+            # 获取激活用户的id
+            user_id = serializer.loads(val)['confirm']
+            # 查询用户
+            user = User.objects.get(id=user_id)
+            user.is_active = 1
+            user.save()
+            return redirect(reverse('user:login'))
+        except SignatureExpired:
+            return HttpResponse('链接失效')
+
+
+class Login(View):
     def get(self, request):
-        pass
+        return render(request, 'login.html')
