@@ -52,9 +52,7 @@ class Register(View):
         serializer = Serializer(settings.SECRET_KEY, 3600)
         info = {'confirm': user.id}
         token = serializer.dumps(info).decode()  # bytes
-        html_msg = '<h5>欢迎您＠%s</h5>请点击下面的链接来激活您的账号<br>' \
-                   '<a href="http://127.0.0.1:8000/user/active/%s">http://127.0.0.1:8000/user/active/%s</a>' % (username, token, token)
-        send_mail('注册激活', '', settings.EMAIL_FROM, [email], html_message=html_msg)
+        
         # 响应请求
         return redirect(reverse('goods:index'))
 
