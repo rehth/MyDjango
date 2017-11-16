@@ -7,8 +7,9 @@ from celery_tasks.tasks import send_email_2_user
 from django.conf import settings
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import SignatureExpired   # 解析异常
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required    # 验证登录的装饰器
+from utils.mixin import LoginRequiredMixin
 import re
 # Create your views here.
 
@@ -95,12 +96,14 @@ class Login(View):
         password = request.POST.get('pwd')
         remember = request.POST.get('remember')
         user = authenticate(username=username, password=password)
+        # 获取next的值, 如果没有则返回　reverse('goods:index')
+        next_url = request.GET.get('next', reverse('goods:index'))
         # 验证
         if user is not None:
             # 是否激活
             if user.is_active:
                 login(request, user)
-                response = redirect(reverse('goods:index'))
+                response = redirect(next_url)
                 # 是否记住用户名
                 if remember == 'on':
                     response.set_cookie('username', username)
@@ -112,11 +115,30 @@ class Login(View):
             return render(request, 'login.html')
 
 
+# /user/logout
+class Logout(View):
+    def get(self, request):
+        logout(request)
+        return redirect(reverse('goods:index'))
+
+
 # /user
-class UserCenter(View):
+class UserCenter(LoginRequiredMixin):
     """用户中心视图"""
     def get(self, request):
-        return render(request, 'user_center_info.html')
+        context = {'page': 'center'}
+        return render(request, 'user_center_info.html', context)
 
 
+# /user/site
+class UserSite(LoginRequiredMixin):
+    def get(self, request):
+        context = {'page': 'site'}
+        return render(request, 'user_center_site.html', context)
 
+
+# /user/order
+class UserOrder(LoginRequiredMixin):
+    def get(self, request):
+        context = {'page': 'order'}
+        return render(request, 'user_center_order.html', context)
