@@ -7,6 +7,7 @@ from celery_tasks.tasks import send_email_2_user
 from django.conf import settings
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import SignatureExpired   # 解析异常
+from django.contrib.auth import authenticate, login
 import re
 # Create your views here.
 
@@ -77,4 +78,33 @@ class Active(View):
 
 class Login(View):
     def get(self, request):
-        return render(request, 'login.html')
+        username = ''
+        checked = ''
+        if 'username' in request.COOKIES:
+            username = request.COOKIES.get('username')
+            checked = 'checked'
+        return render(request, 'login.html', {'username': username, 'checked':checked})
+
+    def post(self, request):
+        username = request.POST.get('username')
+        password = request.POST.get('pwd')
+        remember = request.POST.get('remember')
+        user = authenticate(username=username, password=password)
+        # 验证
+        if user is not None:
+            # 是否激活
+            if user.is_active:
+                login(request, user)
+                response = redirect(reverse('goods:index'))
+                # 是否记住用户名
+                if remember == 'on':
+                    response.set_cookie('username', username)
+                else:
+                    response.delete_cookie('username')
+                return response
+        else:
+            # 错误
+            return render(request, 'login.html')
+
+
+

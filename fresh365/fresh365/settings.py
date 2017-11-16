@@ -42,6 +42,7 @@ INSTALLED_APPS = (
     'apps.goods',   # 商品模块
     'apps.orders',   # 订单模块
     'apps.user',   # 用户模块
+    # 'celery_tasks',  # celery
 )
 
 MIDDLEWARE_CLASSES = (
@@ -133,3 +134,17 @@ EMAIL_HOST_USER = 'zhangqianjuns@163.com'
 EMAIL_HOST_PASSWORD = 'qwer1234'
 # 收件人看到的发件人
 EMAIL_FROM = 'fresh365<zhangqianjuns@163.com>'
+
+# 设置django的缓存－redis
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/2",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+# 设置sessions存储在缓存
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = "default"
