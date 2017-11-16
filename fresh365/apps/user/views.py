@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 from django.views.generic import View
-from apps.user.models import User
+from apps.user.models import User, Address
 from celery_tasks.tasks import send_email_2_user
 from django.conf import settings
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
@@ -117,6 +117,7 @@ class Login(View):
 
 # /user/logout
 class Logout(View):
+    """退出视图"""
     def get(self, request):
         logout(request)
         return redirect(reverse('goods:index'))
@@ -124,21 +125,72 @@ class Logout(View):
 
 # /user
 class UserCenter(LoginRequiredMixin):
-    """用户中心视图"""
+    """用户中心-信息视图"""
     def get(self, request):
         context = {'page': 'center'}
+        # 用户的基本信息
+
+        # 用户的浏览记录
+
         return render(request, 'user_center_info.html', context)
 
 
 # /user/site
 class UserSite(LoginRequiredMixin):
+    """用户中心-地址视图"""
     def get(self, request):
         context = {'page': 'site'}
+        # 获取用户的收货地址信息(默认)
+        # 1.获取所属用户
+        user = request.user
+        # 2.查询用户是否存在默认地址 若没有则返回None
+        # try:
+        #     address = Address.objects.get(user=user, is_default=True)
+        # except Address.DoesNotExist:
+        #     address = None
+
+        address = Address.objects.get_default_address(user)
+        context['address'] = address
         return render(request, 'user_center_site.html', context)
+
+    def post(self, request):
+        """地址添加"""
+        # 接受数据
+        receiver = request.POST.get('receiver')
+        site = request.POST.get('site')
+        zip_code = request.POST.get('zip_code')
+        phone = request.POST.get('phone')
+        # 数据校验
+        if not all([receiver, site, phone]):
+            return redirect(reverse('user:site'))
+        if not re.match(r'^1[34578][0-9]{9}$', phone):
+            return redirect(reverse('user:site'))
+        # 业务处理 地址添加
+        # 1.获取所属用户
+        user = request.user
+        # 2.检查用户是否存在默认地址 若没有则创建默认地址(is_default=True)
+        # try:
+        #     address = Address.objects.get(user=user, is_default=True)
+        # except Address.DoesNotExist:
+        #     address = None
+            
+        address = Address.objects.get_default_address(user)
+        if address:
+            is_default = False
+        else:
+            is_default = True
+        # 3.创建用户
+        Address.objects.create(user=user, receiver=receiver, addr=site,
+                               zip_code=zip_code, phone=phone, is_default=is_default)
+        # 返回应答
+        return redirect(reverse('user:site'))
 
 
 # /user/order
 class UserOrder(LoginRequiredMixin):
+    """用户中心-订单视图"""
     def get(self, request):
         context = {'page': 'order'}
+        # 获取用户的订单详细信息
+
         return render(request, 'user_center_order.html', context)
