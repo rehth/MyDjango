@@ -8,10 +8,12 @@ from django.conf import settings
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import SignatureExpired   # 解析异常
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required    # 验证登录的装饰器
 import re
 # Create your views here.
 
 
+# /user/register
 class Register(View):
     """注册视图"""
     def get(self, request):
@@ -60,6 +62,7 @@ class Register(View):
         return redirect(reverse('goods:index'))
 
 
+# user/active/id
 class Active(View):
     """激活视图"""
     def get(self, request, val):
@@ -76,7 +79,9 @@ class Active(View):
             return HttpResponse('链接失效')
 
 
+# /user/login
 class Login(View):
+    """登录视图"""
     def get(self, request):
         username = ''
         checked = ''
@@ -105,6 +110,13 @@ class Login(View):
         else:
             # 错误
             return render(request, 'login.html')
+
+
+# /user
+class UserCenter(View):
+    """用户中心视图"""
+    def get(self, request):
+        return render(request, 'user_center_info.html')
 
 
 
