@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 from django.views.generic import View
 from apps.user.models import User, Address
+from apps.goods.models import GoodsSKU
 from celery_tasks.tasks import send_email_2_user
 from django.conf import settings
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
@@ -10,6 +11,7 @@ from itsdangerous import SignatureExpired   # 解析异常
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required    # 验证登录的装饰器
 from utils.mixin import LoginRequiredMixin
+from django_redis import get_redis_connection   # 创建与redis连接的类
 import re
 # Create your views here.
 
@@ -42,7 +44,7 @@ class Register(View):
             return render(request, 'register.html', context={'errmsg': '未同意协议'})
             # 校验用户名是否重复
         try:
-            user = User.objects.get(username=username)
+            User.objects.get(username=username)
         except User.DoesNotExist:
             pass
         else:
@@ -119,6 +121,7 @@ class Login(View):
 class Logout(View):
     """退出视图"""
     def get(self, request):
+        """清除sessions"""
         logout(request)
         return redirect(reverse('goods:index'))
 
@@ -129,9 +132,24 @@ class UserCenter(LoginRequiredMixin):
     def get(self, request):
         context = {'page': 'center'}
         # 用户的基本信息
-
+        user = request.user
+        address = Address.objects.get_default_address(user)
+        context['user'] = user
+        context['address'] = address
         # 用户的浏览记录
-
+        # 1.获取redis连接对象
+        con = get_redis_connection("default")
+        # 2.用户id
+        list_id = 'history_%s' % user.id
+        # 3.取出5个最近浏览的商品id
+        goods_sku_list = con.lrange(list_id, 0, 4)
+        # 4.商品列表
+        goods_list = list()
+        # 5.循环从GoodsSKU表中根据id查询商品信息 添加到列表中
+        for goods_id in goods_sku_list:
+            goods_list.append(GoodsSKU.objects.get(id=goods_id))
+        # 6.添加到上下文中
+        context['goods_list'] = goods_list
         return render(request, 'user_center_info.html', context)
 
 
@@ -173,7 +191,7 @@ class UserSite(LoginRequiredMixin):
         #     address = Address.objects.get(user=user, is_default=True)
         # except Address.DoesNotExist:
         #     address = None
-            
+
         address = Address.objects.get_default_address(user)
         if address:
             is_default = False
