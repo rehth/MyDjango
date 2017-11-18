@@ -8,5 +8,6 @@ urlpatterns = [
     url(r'^login$', views.Login.as_view(), name='login'),
     url(r'^logout$', views.Logout.as_view(), name='logout'),
     url(r'^site$', views.UserSite.as_view(), name='site'),
-    url(r'^order$', views.UserOrder.as_view(), name='order')
+    url(r'^order$', views.UserOrder.as_view(), name='order'),
+    # url(r'^fdfs$', views.test_fdsf)   # 测试FastDFS
 ]

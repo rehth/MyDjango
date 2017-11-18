@@ -16,6 +16,10 @@ import re
 # Create your views here.
 
 
+# def test_fdsf(request):
+#     """测试FastDFS"""
+#     return render(request, 'test.html')
+
 # /user/register
 class Register(View):
     """注册视图"""
