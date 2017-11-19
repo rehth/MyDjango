@@ -1,9 +1,9 @@
-from celery import Celery
 import os
 import django
 # 配置环境django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fresh365.settings")
 django.setup()
+from celery import Celery
 from django.core.mail import send_mail
 from django.conf import settings
 from django.template import loader

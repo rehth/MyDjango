@@ -42,6 +42,7 @@ INSTALLED_APPS = (
     'apps.goods',   # 商品模块
     'apps.orders',   # 订单模块
     'apps.user',   # 用户模块
+    'celery_tasks',
 )
 
 MIDDLEWARE_CLASSES = (
