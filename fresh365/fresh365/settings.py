@@ -157,4 +157,4 @@ DEFAULT_FILE_STORAGE = 'utils.FastDFS.FastDFS.FDFSStorage'
 # 2.配置FastDFS客户端的配置文件路径
 FDFS_CONF_CLIENT = './utils/FastDFS/client.conf'
 # 3.配置FastDFS服务器的url
-FDFS_SERVER_URL = 'http://127.0.0.1:8888'
+FDFS_SERVER_URL = 'http://127.0.0.1:8888/'

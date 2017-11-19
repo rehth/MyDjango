@@ -31,6 +31,7 @@ class FDFSStorage(Storage):
             'Storage IP': storage_ip
         } if success else None
         """
+        # 如果上传失败则抛出异常
         if not ret['Status'] == 'Upload successed.':
             raise Exception('FastDFS Upload Fail')
         # 返回被保存文件的真实名称
