@@ -1,5 +1,6 @@
 from django.contrib import admin
 from apps.goods.models import GoodsType, IndexPromotionBanner
+from django.core.cache import cache
 # Register your models here.
 
 
@@ -11,6 +12,8 @@ class BaseModelAdmin(admin.ModelAdmin):
         from celery_tasks.tasks import generate_static_index_html
         # 生成静态页面index.html
         generate_static_index_html.delay()
+        # 清楚index页面的数据缓存cache
+        cache.delete('index_info')
 
     def delete_model(self, request, obj):
         """删除数据表中的数据时调用"""
@@ -18,6 +21,8 @@ class BaseModelAdmin(admin.ModelAdmin):
         # 生成静态页面index.html
         from celery_tasks.tasks import generate_static_index_html
         generate_static_index_html.delay()
+        # 清楚index页面的数据缓存cache
+        cache.delete('index_info')
 
 
 @admin.register(GoodsType)
