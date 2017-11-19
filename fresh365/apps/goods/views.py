@@ -12,7 +12,7 @@ class Index(View):
         # 2.首页轮播商品展示
         banner = IndexGoodsBanner.objects.all().order_by('index')
         # 3.首页促销活动
-        Promotion = IndexPromotionBanner.objects.all().order_by('index')
+        promotion = IndexPromotionBanner.objects.all().order_by('index')
         # 4.首页分类商品展示(图片/文字)
         for goods_type in goods_types:
             # 查询显示模式为标题的商品
@@ -29,5 +29,5 @@ class Index(View):
             cart_content = conn.hlen(hash_key)
         # 构建上下文
         context = {'goods_types': goods_types, 'banner': banner,
-                   'promotion': Promotion, 'cart_content': cart_content}
+                   'promotion': promotion, 'cart_content': cart_content}
         return render(request, 'index.html', context)
