@@ -27,7 +27,7 @@ def send_email_2_user(name, token, to_email):
 
 # 生成静态页面的任务函数
 @app.task
-def static_index_html():
+def generate_static_index_html():
     # 1.商品种类显示
     goods_types = GoodsType.objects.all()
     # 2.首页轮播商品展示
