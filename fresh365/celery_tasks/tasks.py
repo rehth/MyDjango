@@ -1,12 +1,12 @@
 import os
 import django
-# 配置环境django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fresh365.settings")
-django.setup()
 from celery import Celery
 from django.core.mail import send_mail
 from django.conf import settings
 from django.template import loader
+# 配置环境django
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fresh365.settings")
+django.setup()
 from apps.goods.models import GoodsType, IndexGoodsBanner, IndexPromotionBanner, IndexTypeGoodsBanner
 
 # 创建一个celery对象 第一个参数是给其设定一个名字， 第二参数我们设定一个中间人broker
