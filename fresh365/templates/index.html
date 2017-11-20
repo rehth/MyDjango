@@ -52,7 +52,7 @@
                 <div class="subtitle fl">
                     <span>|</span>
                     {% for foo in goods_type.title %}
-                        <a href="#">{{ foo.sku.name }}</a>
+                        <a href="{% url 'goods:detail' foo.id %}">{{ foo.sku.name }}</a>
                     {% endfor %}
 
                 </div>
@@ -60,12 +60,14 @@
             </div>
 
             <div class="goods_con clearfix">
-                <div class="goods_banner fl"><img src="{{ goods_type.image.url }}"></div>
+                <a href="{% url 'goods:list' goods_type.id 1 %}">
+                    <div class="goods_banner fl"><img src="{{ goods_type.image.url }}"></div>
+                </a>
                 <ul class="goods_list fl">
                     {% for goods in goods_type.banner %}
                         <li>
-                            <h4><a href="#">{{ goods.sku.name }}</a></h4>
-                            <a href="#"><img src="{{ goods.sku.image.url }}"></a>
+                            <h4><a href="{% url 'goods:detail' goods.id %}">{{ goods.sku.name }}</a></h4>
+                            <a href="{% url 'goods:detail' goods.id %}"><img src="{{ goods.sku.image.url }}"></a>
                             <div class="prize">¥ {{ goods.sku.price }}</div>
                         </li>
                     {% endfor %}

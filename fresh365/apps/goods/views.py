@@ -6,6 +6,7 @@ from apps.orders.models import OrderGoods
 from django_redis import get_redis_connection   # 创建与redis连接的类
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 # Create your views here.
 
 
@@ -84,37 +85,51 @@ class Detail(View):
         return render(request, 'detail.html', context)
 
 
-# list/(?P<kind>\d+)/(?P<page>\d+)?sort='default/price/sales'
+# list/(?P<kind>\d+)/(?P<pages>\d+)?sort='default/price/sales'
 class GoodsList(View):
     def get(self, request, kind, pages):
         # 接受数据
-        # 接受默认排序方式, 如果没有则返回default
-        sort = request.GET.get('sort', 'default')
-        if sort == 'price':
-            sort = 'price'
-        elif sort == 'sales':
-            sort = '-sales'
-        else:
-            sort = 'id'
         # 验证kind是否在goods_types范围内
         try:
             goods_kind = GoodsType.objects.get(id=kind)
         except GoodsType.DoesNotExist:
             goods_kind = GoodsType.objects.get(id=1)
+        # 接受默认排序方式, 如果没有则返回default
+        sort = request.GET.get('sort', 'default')
+        if sort == 'price':
+            # sku商品列表
+            sku_list = GoodsSKU.objects.filter(goods=goods_kind, status=1).order_by('price')
+        elif sort == 'hot':
+            sku_list = GoodsSKU.objects.filter(goods=goods_kind, status=1).order_by('-sales')
+        else:
+            sort = 'default'
+            sku_list = GoodsSKU.objects.filter(goods=goods_kind, status=1).order_by('-id')
+
         # 1.商品种类
         goods_types = GoodsType.objects.all()
-        # 2.sku商品列表
-        sku_list = GoodsSKU.objects.filter(goods=goods_kind, status=1).order_by(sort)
-        # 3.新品推荐
+
+        # 2.新品推荐
         new_sku = GoodsSKU.objects.filter(goods=goods_kind, status=1).order_by('-create_time')[:2]
 
-        # 2.购物车的商品数量 cart_user.id  hash  当key不存在时，返回0
+        # 3.购物车的商品数量 cart_user.id  hash  当key不存在时，返回0
         user = request.user
         conn = get_redis_connection('default')
         cart_key = 'cart_%d' % user.id
         cart_content = conn.hlen(cart_key)
 
+        # 分页操作
+        paginator = Paginator(sku_list, 10)  # Show 10 contacts per page
+        try:
+            contacts = paginator.page(pages)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            contacts = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range (e.g. 9999), deliver last page of results.
+            contacts = paginator.page(paginator.num_pages)
+
         # 构建上下文
         context = {'goods_types': goods_types, 'cart_content': cart_content,
-                   'goods_kind': goods_kind, 'sku_list': sku_list, 'new_sku': new_sku}
-        return render(request, 'test.html', context)
+                   'goods_kind': goods_kind, 'page': contacts, 'new_sku': new_sku,
+                   'sort': sort}
+        return render(request, 'list.html', context)

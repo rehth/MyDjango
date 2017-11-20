@@ -1,6 +1,6 @@
 from django.contrib import admin
 from apps.goods.models import GoodsType, IndexPromotionBanner, GoodsSKU,\
-    GoodsSPU, IndexTypeGoodsBanner
+    GoodsSPU, IndexTypeGoodsBanner, IndexGoodsBanner
 from django.core.cache import cache
 # Register your models here.
 
@@ -49,3 +49,8 @@ class GoodsSPUAdmin(BaseModelAdmin):
 @admin.register(IndexTypeGoodsBanner)
 class IndexTypeGoodsBannerAdmin(BaseModelAdmin):
     list_display = ['id', 'sku', 'goods', 'display_type']
+
+
+@admin.register(IndexGoodsBanner)
+class IndexGoodsBannerAdmin(BaseModelAdmin):
+    list_display = ['id', 'sku', 'image', 'index']
