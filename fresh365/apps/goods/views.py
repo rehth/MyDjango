@@ -103,7 +103,7 @@ class GoodsList(View):
             sku_list = GoodsSKU.objects.filter(goods=goods_kind, status=1).order_by('-sales')
         else:
             sort = 'default'
-            sku_list = GoodsSKU.objects.filter(goods=goods_kind, status=1).order_by('-id')
+            sku_list = GoodsSKU.objects.filter(goods=goods_kind, status=1).order_by('id')
 
         # 1.商品种类
         goods_types = GoodsType.objects.all()

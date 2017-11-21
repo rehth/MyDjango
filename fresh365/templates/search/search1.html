@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>天天生鲜-搜索结果</title>
+</head>
+<body>
+搜索关键字：{{ query }}
+当前页page对象： {{ page }}
+<ul>
+    {% for foo in page %}
+        <li>{{ foo }}  SearchResult类的实例对象</li>
+    {% endfor %}
+    {% for foo in page %}
+        <li>{{ foo.object }}</li>
+    {% endfor %}
+</ul>
+分页paginator对象:{{ paginator }}
+
+</body>
+</html>

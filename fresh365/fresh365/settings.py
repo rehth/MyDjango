@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'tinymce',    # 富文本
+    'haystack',    # 全文检索框架
     'apps.cart',   # 购物车模块
     'apps.goods',   # 商品模块
     'apps.orders',   # 订单模块
@@ -159,3 +160,16 @@ DEFAULT_FILE_STORAGE = 'utils.FastDFS.FastDFS.FDFSStorage'
 FDFS_CONF_CLIENT = './utils/FastDFS/client.conf'
 # 3.配置FastDFS服务器的url
 FDFS_SERVER_URL = 'http://127.0.0.1:8888/'
+
+# haystack全文检索框架的配置
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        # haystack框架用到的引擎
+        'ENGINE': 'haystack.backends.whoosh_cn_backend.WhooshEngine',
+        # 索引文件路径
+        'PATH': os.path.join(BASE_DIR, 'whoosh_index'),
+    },
+}
+
+# haystack控制每页显示数量
+HAYSTACK_SEARCH_RESULTS_PER_PAGE = 1

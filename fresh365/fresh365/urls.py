@@ -19,6 +19,8 @@ from django.contrib import admin
 urlpatterns = [
     # 站点
     url(r'^admin/', include(admin.site.urls)),
+    # haystack全文检索框架的路径配置
+    url(r'^search', include('haystack.urls')),
     # 富文本
     url(r'^tinymce/', include('tinymce.urls')),
     # 用户模块
