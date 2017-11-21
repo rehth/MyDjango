@@ -52,8 +52,9 @@
                 {% if page.has_previous %}
                     <a href="{% url 'goods:list' goods_kind.id page.previous_page_number %}?sort=default"><上一页</a>
                 {% endif %}
-                {% for num in page.paginator.page_range %}
-                    <a href="{% url 'goods:list' goods_kind.id num %}?sort=default" {% if page.number == num %}class="active" {% endif %}>1</a>
+                {% for num in page_range %}
+                    <a href="{% url 'goods:list' goods_kind.id num %}?sort=default"
+                       {% if page.number == num %}class="active" {% endif %}>{{ num }}</a>
                 {% endfor %}
                 {% if page.has_next %}
                     <a href="{% url 'goods:list' goods_kind.id page.next_page_number %}?sort=default">下一页></a>

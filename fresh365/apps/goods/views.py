@@ -26,8 +26,8 @@ class Index(View):
             # 4.首页分类商品展示(图片/文字)
             for goods_type in goods_types:
                 # 查询显示模式为标题的商品
-                title = IndexTypeGoodsBanner.objects.filter(goods=goods_type, display_type=0)
-                jpg = IndexTypeGoodsBanner.objects.filter(goods=goods_type, display_type=1)
+                title = IndexTypeGoodsBanner.objects.filter(goods=goods_type, display_type=0).order_by('index')
+                jpg = IndexTypeGoodsBanner.objects.filter(goods=goods_type, display_type=1).order_by('index')
                 goods_type.title = title
                 goods_type.banner = jpg
             # 构建上下文
@@ -87,7 +87,7 @@ class Detail(View):
 
 # list/(?P<kind>\d+)/(?P<pages>\d+)?sort='default/price/sales'
 class GoodsList(View):
-    def get(self, request, kind, pages):
+    def get(self, request, kind, page):
         # 接受数据
         # 验证kind是否在goods_types范围内
         try:
@@ -118,18 +118,33 @@ class GoodsList(View):
         cart_content = conn.hlen(cart_key)
 
         # 分页操作
-        paginator = Paginator(sku_list, 10)  # Show 10 contacts per page
+        paginator = Paginator(sku_list, 1)  # Show 10 contacts per page
         try:
-            contacts = paginator.page(pages)
+            contacts = paginator.page(page)
         except PageNotAnInteger:
             # If page is not an integer, deliver first page.
             contacts = paginator.page(1)
         except EmptyPage:
             # If page is out of range (e.g. 9999), deliver last page of results.
             contacts = paginator.page(paginator.num_pages)
+        print(type(page))
+        page = int(page)
+        # todo:分页的页码控制, 页面上页码最多显示5个
+        # 1.页码的页面总数n<=5: 显示所有
+        if paginator.num_pages <= 5:
+            page_range = paginator.page_range
+        # 2.页码的页面总数n>5,但当前页p<=3: 显示range(1, 6)
+        elif paginator.num_pages > 5 and page <= 3:
+            page_range = range(1, 6)
+        # 3.页码的页面总数n>5,但当前页p>=n-2: 显示range(n-4, n+1)
+        elif paginator.num_pages > 5 and page >= paginator.num_pages - 2:
+            page_range = range(paginator.num_pages-4, paginator.num_pages+1)
+        # 4.其他情况,当前页p: 显示range(p-2, p+3)
+        else:
+            page_range = range(page-2, page+3)
 
         # 构建上下文
         context = {'goods_types': goods_types, 'cart_content': cart_content,
                    'goods_kind': goods_kind, 'page': contacts, 'new_sku': new_sku,
-                   'sort': sort}
+                   'sort': sort, 'page_range': page_range}
         return render(request, 'list.html', context)
