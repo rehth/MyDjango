@@ -12,6 +12,7 @@ from django_redis import get_redis_connection
 # param: {count, sku_id, csrf}
 # /card/add
 class CartAdd(View):
+    """将商品添加到购物车"""
     def post(self, request):
         # todo:登陆验证
         user = request.user
@@ -57,3 +58,37 @@ class CartAdd(View):
         context = {'res': 5, 'cart_count': kind, 'msg': '商品添加成功'}
         # todo:返回应答
         return JsonResponse(data=context)
+
+
+# /cart
+class CartInfo(LoginRequiredMixin):
+    """购物车页面处理"""
+    def get(self, request):
+        """显示"""
+        # 查找数据
+        user = request.user
+        conn = get_redis_connection('default')
+        cart_key = 'cart_%s' % user.id
+        # 获取购物信息的字典
+        cart_dict = conn.hgetall(cart_key)
+        # 购物车中商品列表
+        sku_list = list()
+        # 购物车中商品的总数量
+        total_count = 0
+        for sku_id, count in cart_dict.items():
+            try:
+                sku = GoodsSKU.objects.get(id=sku_id)
+            except GoodsSKU.DoesNotExist:
+                # 商品不存在, 结束本次循环
+                continue
+            # 商品的数量
+            sku.count = count
+            # 商品的小计 保留2位小数  float('%.2f' % 3.3456)
+            sku.amount = float('%.2f' % (int(count)*float(sku.price)))
+            total_count += int(count)
+            sku_list.append(sku)
+
+        # 构建上下文
+        context = {'sku_list': sku_list, 'total_count': total_count}
+
+        return render(request, 'test.html', context)
