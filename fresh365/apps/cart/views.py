@@ -11,8 +11,12 @@ from django_redis import get_redis_connection
 # ajax请求 post $.post(URL,data,callback);
 # param: {count, sku_id, csrf}
 # /card/add
-class CartAdd(LoginRequiredMixin):
+class CartAdd(View):
     def post(self, request):
+        # todo:登陆验证
+        user = request.user
+        if not user.is_authenticated():
+            return JsonResponse({'res': 0, 'msg': '请先登陆'})
         # todo:接收数据
         count = request.POST.get('count')
         sku_id = request.POST.get('sku_id')
@@ -30,8 +34,7 @@ class CartAdd(LoginRequiredMixin):
             return JsonResponse({'res': 3, 'msg': '商品不存在或已下架'})
 
         # todo:业务处理-添加购物车
-        print('业务处理-添加购物车')
-        user = request.user
+        # print('业务处理-添加购物车')
         # 1.获取redis数据库连接
         conn = get_redis_connection('default')
         # 2.构建对应用户的购物车的名字
