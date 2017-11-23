@@ -23,7 +23,7 @@ class CartAdd(View):
         sku_id = request.POST.get('sku_id')
         # todo:数据校验
         if not all([count, sku_id]):
-            print(count + ':' + sku_id)
+            # print(count + ':' + sku_id)
             return JsonResponse({'res': 1, 'msg': '数据不完整'})
         try:
             count = int(count)
@@ -92,3 +92,53 @@ class CartInfo(LoginRequiredMixin):
         context = {'sku_list': sku_list, 'total_count': total_count}
 
         return render(request, 'test.html', context)
+
+
+# /cart/update
+class CartUpdate(View):
+    """将商品添加到购物车"""
+    def post(self, request):
+        # todo:登陆验证
+        user = request.user
+        if not user.is_authenticated():
+            return JsonResponse({'res': 0, 'msg': '请先登陆'})
+        # todo:接收数据
+        count = request.POST.get('count')
+        sku_id = request.POST.get('sku_id')
+        print(count + ':' + sku_id)
+        # todo:数据校验
+        if not all([count, sku_id]):
+            return JsonResponse({'res': 1, 'msg': '数据不完整'})
+        try:
+            count = int(count)
+        except Exception:
+            return JsonResponse({'res': 2, 'msg': '商品数量发生错误'})
+        try:
+            sku = GoodsSKU.objects.get(id=sku_id, status=1)
+        except GoodsSKU.DoesNotExist:
+            return JsonResponse({'res': 3, 'msg': '商品不存在或已下架'})
+
+        # todo:业务处理-添加购物车
+        # 1.获取redis数据库连接
+        conn = get_redis_connection('default')
+        # 2.构建对应用户的购物车的名字
+        cart_key = 'cart_%s' % user.id
+        # 3.数据校正-商品库存
+        if count > int(sku.stock):
+            return JsonResponse({'res': 4, 'msg': '超出商品库存'})
+        # hset(name, key, value) 设置购物车数据
+        if count > 0:
+            conn.hset(cart_key, sku_id, count)
+        elif count == 0:
+            conn.hdel(cart_key, sku_id)
+            # 4.查询购物车中商品sku类的数量
+            kind = conn.hlen(cart_key)
+            context = {'res': 6, 'cart_count': kind, 'msg': '商品添加成功'}
+            return JsonResponse(data=context)
+
+        # 4.查询购物车中商品sku类的数量
+        kind = conn.hlen(cart_key)
+        # todo:构建上下文
+        context = {'res': 5, 'cart_count': kind, 'msg': '商品添加成功'}
+        # todo:返回应答
+        return JsonResponse(data=context)
