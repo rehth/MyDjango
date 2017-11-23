@@ -1,161 +1,70 @@
 {% extends 'base_center.html' %}
 {% load staticfiles %}
 {% block TitleName %}
-天天生鲜-购物车
+天天生鲜-提交订单
 {% endblock %}
 {% block search_title %}
-购物车
-{% endblock %}
+    提交订单
+{% endblock search_title %}
 {% block body_context %}
+<h3 class="common_title">确认收货地址</h3>
+	<div class="common_list_con clearfix">
+		<dl>
+			<dt>寄送到：</dt>
+            {% for addr in addrs %}
+                <dd><input type="radio" name="" {% if addr.is_default %}checked="checked"{% endif %}>{{ addr.addr }} （{{ addr.receiver }} 收） {{ addr.phone }}</dd>
+            {% endfor %}
+		</dl>
+		<a href="{% url 'user:site' %}" class="edit_site">编辑收货地址</a>
+	</div>
 
-	<div class="total_count">全部商品<em>{{ total_count }}</em>件</div>
-	<ul class="cart_list_th clearfix">
-		<li class="col01">商品名称</li>
-		<li class="col02">商品单位</li>
-		<li class="col03">商品价格</li>
-		<li class="col04">数量</li>
-		<li class="col05">小计</li>
-		<li class="col06">操作</li>
-	</ul>
-    {# 购物车的结算功能实现 #}
-    <form action="{% url 'orders:place' %}" method="post">
-    {% for sku in sku_list %}
-        <ul class="cart_list_td clearfix">
-            {% csrf_token %}
-            <li class="col01"><input type="checkbox" name="sku_ids" value="{{ sku.id }}" checked="checked"></li>
-            <li class="col02"><img src="{{ sku.image.url }}"></li>
-            <li class="col03">奇异果<br><em>{{ sku.price }}元/{{ sku.unite }}</em></li>
-            <li class="col04">{{ sku.unite }}</li>
-            <li class="col05">{{ sku.price }}元</li>
-            <li class="col06">
-                <div class="num_add">
-                    <a href="javascript:;" class="add fl" stock="{{ sku.stock }}">+</a>
-                    <input type="text" sku_id="{{ sku.id }}" class="num_show fl" value="{{ sku.count }}">
-                    <a href="javascript:;" class="minus fl">-</a>
-                </div>
-            </li>
-            <li class="col07">{{ sku.amount }}元</li>
-            <li class="col08"><a href="javascript:;">删除</a></li>
-        </ul>
-    {% endfor %}
+	<h3 class="common_title">支付方式</h3>
+	<div class="common_list_con clearfix">
+		<div class="pay_style_con clearfix">
+			<input type="radio" name="pay_style" checked>
+			<label class="cash">货到付款</label>
+			<input type="radio" name="pay_style">
+			<label class="weixin">微信支付</label>
+			<input type="radio" name="pay_style">
+			<label class="zhifubao"></label>
+			<input type="radio" name="pay_style">
+			<label class="bank">银行卡支付</label>
+		</div>
+	</div>
 
-	<ul class="settlements">
-		<li class="col01"><input type="checkbox" name="" checked=""></li>
-		<li class="col02">全选</li>
-		<li class="col03">合计(不含运费)：<span>¥</span><em>42.60</em><br>共计<b>{{ total_count }}</b>件商品</li>
-		<li class="col04"><input type="submit" value="去结算"></li>
-	</ul>
-</form>
-{% endblock %}
-{% block buttomFiles %}
-	<script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
-    <script>
-        // 更新商品价格小计
-        function update_sku_amount(sku_ul) {
-            var num = sku_ul.find('.num_show').val();
-            var p = sku_ul.children('.col05').text();
-            sku_ul.children('.col07').text((parseInt(num)*parseFloat(p)).toFixed(2)+'元');
-        }
+	<h3 class="common_title">商品列表</h3>
 
-        // 更新总价格和总数量，被选中的
-        update_total_price();
-        function update_total_price() {
-            var price = 0;
-            var count = 0;
-            // $(selector).each(function(index,element))
-            $(':checkbox:checked').parents('.cart_list_td').each(function () {
-                // 获取不同ul下的商品价格小计
-                var am = parseFloat($(this).children('.col07').text());
-                var num = $(this).find('.num_show').val();
-                // 循环相加
-                price = price + parseFloat(am);
-                count = count + parseInt(num)
-            });
+	<div class="common_list_con clearfix">
+		<ul class="goods_list_th clearfix">
+			<li class="col01">商品名称</li>
+			<li class="col02">商品单位</li>
+			<li class="col03">商品价格</li>
+			<li class="col04">数量</li>
+			<li class="col05">小计</li>
+		</ul>
+		<ul class="goods_list_td clearfix">
+			<li class="col01">1</li>
+			<li class="col02"><img src="images/goods/goods012.jpg"></li>
+			<li class="col03">奇异果</li>
+			<li class="col04">500g</li>
+			<li class="col05">25.80元</li>
+			<li class="col06">1</li>
+			<li class="col07">25.80元</li>
+		</ul>
+	</div>
 
-            // 设置被选中的商品总价格和总数量  alert(price.toFixed(2));
-            $('.settlements .col03').children('em').text(price.toFixed(2));
-            $('.settlements .col03').children('b').text(count);
-        }
+	<h3 class="common_title">总金额结算</h3>
 
-        // 复选框功能去全选和全不选
-        $('.settlements :checkbox').change(function () {
-            var status = $(this).prop('checked');  //true or false
-            $('.cart_list_td :checkbox').prop('checked', status)
-            update_total_price()
+	<div class="common_list_con clearfix">
+		<div class="settle_con">
+			<div class="total_goods_count">共<em>2</em>件商品，总金额<b>42.60元</b></div>
+			<div class="transit">运费：<b>10元</b></div>
+			<div class="total_pay">实付款：<b>52.60元</b></div>
+		</div>
+	</div>
 
-        });
-        $('.cart_list_td :checkbox').change(function () {
-            var sStatus = $(this).prop('checked');
-            //alert(false==false)   true
-            if (sStatus == false){
-                $('.settlements :checkbox').prop('checked', '')
-            }
-            if ($('.cart_list_td :checkbox').prop('checked') == true){
-                $('.settlements :checkbox').prop('checked', true)
-            }
-            update_total_price()
-        });
-        // 商品数量增加功能 按键'+'
-        var stock = $('.add').attr('stock');
-        $('.add').click(function () {
-            // 获取sku_ul,sku_id
-            var sku_ul = $(this).parents('ul');
-            var sku_id = $(this).next('.num_show').attr('sku_id');
-            // 进行库存校验
-            var count = $(this).next('.num_show').val();
-            count = parseInt(count) + 1;
-            if (stock >= count) {
-                // 发送ajax请求 更新购物车
-                send_ajax(sku_id, count, sku_ul);
-            } else {
-                alert('该商品库存数量不足')
-            }
-        });
-        // 获取-的点击事件
-        $('.minus').click(function () {
-            // 获取sku_ul, sku_id
-            var sku_ul = $(this).parents('ul');
-            var sku_id = $(this).prev('.num_show').attr('sku_id');
-            var count = $(this).prev('.num_show').val();
-            count = parseInt(count) - 1;
-            // 进行库存校验
-            if (count<=0) {
-                count = 1;
-            }
-            // 发送ajax请求 更新购物车
-            send_ajax(sku_id, count, sku_ul);
-        });
-        // 获取'删除'的点击事件
-        $('.col08').click(function () {
-            var sku_ul = $(this).parents('ul');
-            var sku_id = sku_ul.find('.num_show').attr('sku_id');
-            send_ajax(sku_id, 0, sku_ul)
-        });
-
-        // 发送ajax请求 更新购物车
-        function send_ajax(sku_id, count, sku_ul) {
-            var csrf = $(':input[name="csrfmiddlewaretoken"]').val();
-            var param = {'count': count, 'sku_id': sku_id, 'csrfmiddlewaretoken': csrf};
-            $.post('/cart/update', param, function (data) {
-                if (data.res == 5){
-                    // 设置
-                    sku_ul.find('.num_show').val(count);
-                    // 更新总价
-                    update_sku_amount(sku_ul);
-                    update_total_price();
-                }
-                else if (data.res == 6) {
-                    sku_ul.remove()
-                }
-                else {
-                    alert(data.msg)
-                }
-            })
-        }
-
-
-
-
-    </script>
+	<div class="order_submit clearfix">
+		<a href="javascript:;" id="order_btn">提交订单</a>
+	</div>
 
 {% endblock %}
