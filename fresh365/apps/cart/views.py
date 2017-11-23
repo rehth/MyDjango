@@ -91,7 +91,7 @@ class CartInfo(LoginRequiredMixin):
         # 构建上下文
         context = {'sku_list': sku_list, 'total_count': total_count}
 
-        return render(request, 'test.html', context)
+        return render(request, 'cart.html', context)
 
 
 # /cart/update

@@ -17,10 +17,12 @@
 		<li class="col05">小计</li>
 		<li class="col06">操作</li>
 	</ul>
+    {# 购物车的结算功能实现 #}
+    <form action="{% url 'orders:place' %}" method="post">
     {% for sku in sku_list %}
         <ul class="cart_list_td clearfix">
             {% csrf_token %}
-            <li class="col01"><input type="checkbox" name="" checked="checked"></li>
+            <li class="col01"><input type="checkbox" name="sku_ids" value="{{ sku.id }}" checked="checked"></li>
             <li class="col02"><img src="{{ sku.image.url }}"></li>
             <li class="col03">奇异果<br><em>{{ sku.price }}元/{{ sku.unite }}</em></li>
             <li class="col04">{{ sku.unite }}</li>
@@ -41,9 +43,9 @@
 		<li class="col01"><input type="checkbox" name="" checked=""></li>
 		<li class="col02">全选</li>
 		<li class="col03">合计(不含运费)：<span>¥</span><em>42.60</em><br>共计<b>{{ total_count }}</b>件商品</li>
-		<li class="col04"><a href="place_order.html">去结算</a></li>
+		<li class="col04"><input type="submit" value="去结算"></li>
 	</ul>
-
+</form>
 {% endblock %}
 {% block buttomFiles %}
 	<script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
@@ -138,8 +140,6 @@
                 if (data.res == 5){
                     // 设置
                     sku_ul.find('.num_show').val(count);
-                    // 设置页面上用户购物车中商品的条目数
-                    $('#show_count').html(data.cart_count);
                     // 更新总价
                     update_sku_amount(sku_ul);
                     update_total_price();
@@ -152,6 +152,7 @@
                 }
             })
         }
+
 
 
 
