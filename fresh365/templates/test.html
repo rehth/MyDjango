@@ -95,7 +95,6 @@
                     'pay_method': pay_method, 'csrfmiddlewaretoken': csrf};
                 $.post('/orders/commit', param, function (data) {
                     if (data.res==5){
-                        alert(data.msg);
                         localStorage.setItem('order_finish',2);
                         $('.popup_con').fadeIn('fast', function() {
                             setTimeout(function(){
