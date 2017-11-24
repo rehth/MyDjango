@@ -57,7 +57,7 @@ class OrderPlace(LoginRequiredMixin):
         # 收货地址
         addrs = Address.objects.filter(user=user)
         # todo:返回应答
-        # sku_ids = ','.join(sku_ids)
+        sku_ids = ','.join(sku_ids)
         context = {
             'orders_sku': orders_sku, 'total_count': total_count,
             'trans_price': trans_price, 'total_pay': total_pay,
@@ -76,9 +76,10 @@ class OrdersCommit(LoginRequiredMixin):
     def post(self, request):
         # todo:数据接受
         user = request.user
-        sku_ids = list(request.POST.get('sku_ids'))
+        sku_ids = request.POST.get('sku_ids')
         addr_id = request.POST.get('addr_id')
         pay_method = request.POST.get('pay_method')
+        sku_ids = sku_ids.split(',')
         # todo:数据检验
         # 订单商品列表
         orders_sku = list()
@@ -87,20 +88,22 @@ class OrdersCommit(LoginRequiredMixin):
         # 商品总价格
         total_price = 0
         if not all([sku_ids, addr_id, pay_method]):
-            return
+            return JsonResponse({'res': 0, 'msg': '信息不完整'})
+        # 购物车查询
+        conn = get_redis_connection('default')
+        cart_key = 'cart_%s' % user.id
         for sku_id in sku_ids:
+
             try:
                 sku = GoodsSKU.objects.get(id=sku_id)
             except GoodsSKU.DoesNotExist:
-                return
-            # 购物车查询
-            conn = get_redis_connection('default')
-            cart_key = 'cart_%s' % user.id
+                return JsonResponse({'res': 1, 'msg': '商品不存在或已下架'})
             # 商品数量
-            sku.count = conn.hget(cart_key, sku_id)
+            sku.count = conn.hget(cart_key, sku_id)    # b'4'
+
             # 商品库存检验
-            if sku.count > sku.stock:
-                return
+            if int(sku.count) > int(sku.stock):
+                return JsonResponse({'res': 2, 'msg': '库存数量不足'})
             total_count += int(sku.count)
             # 商品小计
             amount = int(sku.count) * float(sku.price)
@@ -108,16 +111,16 @@ class OrdersCommit(LoginRequiredMixin):
             total_price += sku.amount
             orders_sku.append(sku)
         # pay_method
-        for pay in OrderInfo.pay_method_choices.keys():
-            if pay_method in pay:
+        for pay in OrderInfo.pay_method_choices:
+            if int(pay_method) in pay:
                 break
         else:
-            return
+            return JsonResponse({'res': 3, 'msg': '支付方式有误'})
         # 收货地址
         try:
             addr = Address.objects.get(user=user, id=addr_id)
         except Address.DoesNotExist:
-            return
+            return JsonResponse({'res': 4, 'msg': '收货地址有误'})
         # todo:业务处理-添加一个订单信息表, n个订单商品表
         # 订单信息表
         # 订单id:秒级时间戳+user.id
@@ -133,9 +136,11 @@ class OrdersCommit(LoginRequiredMixin):
                                       count=sku.count, price=sku.price,
                                       comment='Null')
             # 购物车数据更新
+            conn.hdel(cart_key, sku.id)
             # 商品库存更新
+            sku.stock -= int(sku.count)
 
         # todo:返回应答
-        return JsonResponse(data=None)
+        return JsonResponse(data={'res': 5, 'msg': '提交成功'})
 
 

@@ -58,7 +58,7 @@
 	</div>
 
 	<h3 class="common_title">总金额结算</h3>
-
+    {% csrf_token %}
 	<div class="common_list_con clearfix">
 		<div class="settle_con">
 			<div class="total_goods_count">共<em>{{ total_count }}</em>件商品，总金额<b>{{ total_price }}元</b></div>
@@ -88,23 +88,27 @@
                 var sku_ids=$(this).attr('sku_ids');
                 var addr_id=$('dd :radio:checked').val();
                 var pay_method=$('.pay_style_con :radio:checked').val();
+                var csrf = $(':input[name="csrfmiddlewaretoken"]').val();
                 // alert(sku_ids+':'+addr_id+':'+pay_method);
                 // 发送ajax post请求 参数：sku_ids, addr_id, pay_method
-                var param = {'sku_ids': sku_ids, 'addr_id': addr_id, 'pay_method': pay_method}
-                $.post('orders/commit', param, function (data) {
-
+                var param = {'sku_ids': sku_ids, 'addr_id': addr_id,
+                    'pay_method': pay_method, 'csrfmiddlewaretoken': csrf};
+                $.post('/orders/commit', param, function (data) {
+                    if (data.res==5){
+                        alert(data.msg);
+                        localStorage.setItem('order_finish',2);
+                        $('.popup_con').fadeIn('fast', function() {
+                            setTimeout(function(){
+                                $('.popup_con').fadeOut('fast',function(){
+                                    window.location.href = '/user/order';
+                                });
+                            },3000)
+                        });
+                    }
+                    else {
+                        alert(data.msg)
+                    }
                 });
-
-{#                localStorage.setItem('order_finish',2);#}
-{#                $('.popup_con').fadeIn('fast', function() {#}
-{#    #}
-{#                    setTimeout(function(){#}
-{#                        $('.popup_con').fadeOut('fast',function(){#}
-{#                            window.location.href = 'index.html';#}
-{#                        });	#}
-{#                    },3000)#}
-{#                    #}
-{#                });#}
             });
 	</script>
 {% endblock %}
