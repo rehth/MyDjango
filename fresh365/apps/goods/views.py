@@ -127,7 +127,6 @@ class GoodsList(View):
         except EmptyPage:
             # If page is out of range (e.g. 9999), deliver last page of results.
             contacts = paginator.page(paginator.num_pages)
-        print(type(page))
         page = int(page)
         # todo:分页的页码控制, 页面上页码最多显示5个
         # 1.页码的页面总数n<=5: 显示所有

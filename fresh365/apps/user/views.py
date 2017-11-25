@@ -9,10 +9,12 @@ from django.conf import settings
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import SignatureExpired   # 解析异常
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required    # 验证登录的装饰器
 from utils.mixin import LoginRequiredMixin
 from django_redis import get_redis_connection   # 创建与redis连接的类
 import re
+from apps.orders.models import OrderInfo, OrderGoods
+from django.core.paginator import Paginator, EmptyPage
+# from django.contrib.auth.decorators import login_required    # 验证登录的装饰器
 # Create your views here.
 
 
@@ -211,8 +213,49 @@ class UserSite(LoginRequiredMixin):
 # /user/order
 class UserOrder(LoginRequiredMixin):
     """用户中心-订单视图"""
-    def get(self, request):
-        context = {'page': 'order'}
-        # 获取用户的订单详细信息
+    def get(self, request, page):
+        user = request.user
+        # 获取用户的订单详细信息 order_info, order_goods
+        try:
+            orders = OrderInfo.objects.filter(user=user)
+        except OrderInfo.DoesNotExist:
+            return redirect(reverse('cart:info'))
+        for order in orders:
+            # 查找订单对应的商品list
+            goods = OrderGoods.objects.filter(order=order)
+            # 计算商品小计
+            for good in goods:
+                amount = good.count * good.price
+                good.amount = ('%.2f' % amount)
+                # 动态属性添加
+            order.status_name = OrderInfo.ORDER_STATUS[order.order_status]
+            order.goods = goods
+        # 分页操作
+        if not page:
+            page = 1
+        try:
+            page = int(page)
+        except Exception:
+            page = 1
+        paginator = Paginator(orders, 2)
+        try:
+            contacts = paginator.page(page)
+        except EmptyPage:
+            # If page is out of range (e.g. 9999), deliver last page of results.
+            contacts = paginator.page(paginator.num_pages)
+        # todo:分页的页码控制, 页面上页码最多显示5个
+        # 1.页码的页面总数n<=5: 显示所有
+        if paginator.num_pages <= 5:
+            page_range = paginator.page_range
+        # 2.页码的页面总数n>5,但当前页p<=3: 显示range(1, 6)
+        elif paginator.num_pages > 5 and page <= 3:
+            page_range = range(1, 6)
+        # 3.页码的页面总数n>5,但当前页p>=n-2: 显示range(n-4, n+1)
+        elif paginator.num_pages > 5 and page >= paginator.num_pages - 2:
+            page_range = range(paginator.num_pages-4, paginator.num_pages+1)
+        # 4.其他情况,当前页p: 显示range(p-2, p+3)
+        else:
+            page_range = range(page-2, page+3)
 
+        context = {'page': 'order', 'page_range': page_range, 'pages': contacts}
         return render(request, 'user_center_order.html', context)

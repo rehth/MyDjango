@@ -253,9 +253,11 @@ class OrdersCommit(LoginRequiredMixin):
                     if not res:
                         # 更新失败
                         if i == 2:
+                            # 订单添加失败，记录回滚
+                            transaction.savepoint_rollback(sid)
                             return JsonResponse({'res': 7, 'msg': '订单提交失败'})
                         continue
-                        
+
                     # order_info信息更新
                     orders.total_count = total_count
                     orders.total_price = total_price
