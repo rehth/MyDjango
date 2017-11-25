@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.urlresolvers import reverse
 from django.views.generic import View
 from apps.user.models import User, Address
@@ -14,6 +14,7 @@ from django_redis import get_redis_connection   # 创建与redis连接的类
 import re
 from apps.orders.models import OrderInfo, OrderGoods
 from django.core.paginator import Paginator, EmptyPage
+
 # from django.contrib.auth.decorators import login_required    # 验证登录的装饰器
 # Create your views here.
 
@@ -217,7 +218,7 @@ class UserOrder(LoginRequiredMixin):
         user = request.user
         # 获取用户的订单详细信息 order_info, order_goods
         try:
-            orders = OrderInfo.objects.filter(user=user)
+            orders = OrderInfo.objects.filter(user=user).order_by('-order_id')
         except OrderInfo.DoesNotExist:
             return redirect(reverse('cart:info'))
         for order in orders:
@@ -230,6 +231,7 @@ class UserOrder(LoginRequiredMixin):
                 # 动态属性添加
             order.status_name = OrderInfo.ORDER_STATUS[order.order_status]
             order.goods = goods
+            order.total_pay = order.total_price + order.transit_price
         # 分页操作
         if not page:
             page = 1
@@ -237,7 +239,7 @@ class UserOrder(LoginRequiredMixin):
             page = int(page)
         except Exception:
             page = 1
-        paginator = Paginator(orders, 2)
+        paginator = Paginator(orders, 4)
         try:
             contacts = paginator.page(page)
         except EmptyPage:
@@ -259,3 +261,6 @@ class UserOrder(LoginRequiredMixin):
 
         context = {'page': 'order', 'page_range': page_range, 'pages': contacts}
         return render(request, 'user_center_order.html', context)
+
+
+
