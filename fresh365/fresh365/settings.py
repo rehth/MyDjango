@@ -118,6 +118,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
+# STATIC_ROOT=收集的静态文件路径 例如:/var/www/dailyfresh/static;
+STATIC_ROOT = '/home/python/Desktop/MyDjango/fresh365/nginx_static'
 
 # 富文本编辑器配置
 TINYMCE_DEFAULT_CONFIG = {
